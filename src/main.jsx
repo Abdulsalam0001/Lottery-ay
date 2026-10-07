@@ -1,6 +1,5 @@
 import React,{useEffect,useState}from"react";
 import{createRoot}from"react-dom/client";
-import{motion,AnimatePresence}from"framer-motion";
 import"./styles.css";
 import{getPublicWinners,getPublicWithdrawals,getPublicTestimonials,mockWinners,mockWithdrawals,mockTestimonials}from"./publicData";
 
@@ -28,47 +27,47 @@ return<div className="app">
 <nav>{["games","results","winners","how"].map(i=><a key={i} href={"#"+i}>{i==="how"?"How it works":i[0].toUpperCase()+i.slice(1)}</a>)}</nav>
 <div className="nav-actions"><button className="ghost" onClick={()=>notify("Sign in is not connected in this demo.")}>Sign in</button><button className="btn sm" onClick={()=>go("games")}>Play now</button></div>
 <button className="burger" aria-label="Menu" onClick={()=>setMenu(v=>!v)}>☰</button></header>
-<AnimatePresence>{menu&&<motion.div className="mobile" initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}>{["games","results","winners","how"].map(i=><a key={i} href={"#"+i} onClick={()=>setMenu(false)}>{i==="how"?"How it works":i[0].toUpperCase()+i.slice(1)}</a>)}</motion.div>}</AnimatePresence>
+{menu&&<div className="mobile">{["games","results","winners","how"].map(i=><a key={i} href={"#"+i} onClick={()=>setMenu(false)}>{i==="how"?"How it works":i[0].toUpperCase()+i.slice(1)}</a>)}</div>}
 
 <section className="hero"><div className="wrap hero-grid">
-<div><motion.span className="pill" initial={{opacity:0}} animate={{opacity:1}}><i/>Next draw · Saturday 10:00 PM ET</motion.span>
-<motion.h1 initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{duration:.7}}>Your numbers.<br/><em>Your moment.</em></motion.h1>
+<div><span className="pill"><i/>Next draw · Saturday 10:00 PM ET</span>
+<h1>Your numbers.<br/><em>Your moment.</em></motion.h1>
 <p>Follow live draws, explore the biggest jackpots and see verified results in one clean, trusted place.</p>
 <div className="row"><button className="btn" onClick={()=>go("games")}>Explore games →</button><a className="link" href="#results">Latest results</a></div>
 <div className="proof"><div className="stack">{faces.slice(0,4).map(f=><img key={f} src={U(f,96,96)} alt=""/>)}</div><span><b>18K+</b> players celebrated this month</span></div></div>
-<motion.div className="hero-card" initial={{opacity:0,scale:.95}} animate={{opacity:1,scale:1}} transition={{delay:.15,duration:.7}}>
+<div className="hero-card">
 <img src={HERO} alt="Friends celebrating together"/><div className="shade"/>
-<div className="jack"><small>Estimated jackpot</small><strong>$125<span>M</span></strong><button className="btn light" onClick={()=>notify("Ticket flow is not part of this demo.")}>Play $2</button></div></motion.div>
+<div className="jack"><small>Estimated jackpot</small><strong>$125<span>M</span></strong><button className="btn light" onClick={()=>notify("Ticket flow is not part of this demo.")}>Play $2</button></div></div>
 </div></section>
 
 <section className="stats"><div className="wrap stats-grid">{stats.map(([v,l])=><div key={l}><strong>{v}</strong><span>{l}</span></div>)}</div></section>
 
-<section id="games" className="sec"><div className="wrap"><motion.div {...fade} className="head"><span className="kick">Featured games</span><h2>Choose your game</h2></motion.div>
-<div className="cards">{games.map((g,i)=><motion.article key={g.name} {...fade} transition={{delay:i*.08}} whileHover={{y:-6}} className={"game "+g.c}>
+<section id="games" className="sec"><div className="wrap"><div {...fade} className="head"><span className="kick">Featured games</span><h2>Choose your game</h2></div>
+<div className="cards">{games.map((g,i)=><article key={g.name} {...fade} className={"game "+g.c}>
 <span className="tag">{g.tag}</span><div className="orbs"><i/><i/><i/></div><h3>{g.name}</h3><div className="amt">{g.jackpot}</div><p>{g.draw}</p>
-<div className="foot"><span>{g.price} per play</span><button onClick={()=>notify(g.name+" selected (demo).")}>Play →</button></div></motion.article>)}</div></div></section>
+<div className="foot"><span>{g.price} per play</span><button onClick={()=>notify(g.name+" selected (demo).")}>Play →</button></div></article>)}</div></div></section>
 
 <section id="results" className="sec alt"><div className="wrap split">
-<motion.div {...fade}><span className="kick">Latest result</span><h2>Did your numbers come up?</h2><p className="lead">Compare your ticket with the verified American Millions draw.</p>
+<div {...fade}><span className="kick">Latest result</span><h2>Did your numbers come up?</h2><p className="lead">Compare your ticket with the verified American Millions draw.</p>
 <div className="result"><div className="meta"><span>American Millions · Draw #004820</span><span>Sep 30, 2026</span></div>
 <div className="balls">{[8,14,22,31,42,48].map(n=><b key={n}>{String(n).padStart(2,"0")}</b>)}<b className="bonus">17</b></div></div>
-<button className="btn dark" onClick={()=>notify("Results archive is not connected in this demo.")}>View all results →</button></motion.div>
-<motion.div {...fade} className="how-list">{steps.map(([t,d],i)=><div className="step" key={t} id={i===0?"how":undefined}><span>0{i+1}</span><div><h3>{t}</h3><p>{d}</p></div></div>)}</motion.div>
+<button className="btn dark" onClick={()=>notify("Results archive is not connected in this demo.")}>View all results →</button></div>
+<div {...fade} className="how-list">{steps.map(([t,d],i)=><div className="step" key={t} id={i===0?"how":undefined}><span>0{i+1}</span><div><h3>{t}</h3><p>{d}</p></div></div>)}</div>
 </div></section>
 
-<section id="winners" className="sec"><div className="wrap"><motion.div {...fade} className="head"><span className="kick">Celebrating players</span><h2>Recent winners</h2><p className="note">Illustrative stock photos and sample names for design demonstration. Not real winners.</p></motion.div>
-<div className="winners">{winners.slice(0,6).map((w,i)=><motion.article key={w.id||w.name} {...fade} transition={{delay:i*.06}} className="winner">
-<img src={U(faces[i%faces.length],240,240)} alt="" loading="lazy"/><div><h3>{w.name}</h3><p>{w.state} · {w.game}</p></div><strong>{w.amount}</strong></motion.article>)}</div></div></section>
+<section id="winners" className="sec"><div className="wrap"><div {...fade} className="head"><span className="kick">Celebrating players</span><h2>Recent winners</h2><p className="note">Illustrative stock photos and sample names for design demonstration. Not real winners.</p></div>
+<div className="winners">{winners.slice(0,6).map((w,i)=><article key={w.id||w.name} {...fade} className="winner">
+<img src={U(faces[i%faces.length],240,240)} alt="" loading="lazy"/><div><h3>{w.name}</h3><p>{w.state} · {w.game}</p></div><strong>{w.amount}</strong></article>)}</div></div></section>
 
 <section className="sec alt"><div className="wrap split">
-<motion.div {...fade} className="panel"><div className="ph"><b>Recent payouts</b><span><i/>Sample feed</span></div>
-{pay.slice(0,5).map(p=><div className="prow" key={p.id||p.name}><div className="chk">✓</div><div><b>{p.name}</b><small>{p.state} · {p.time}</small></div><strong>{p.amount}</strong></div>)}</motion.div>
-<div className="quotes"><span className="kick">Player stories</span>{tests.slice(0,3).map((t,i)=><motion.blockquote key={t.id||t.name} {...fade} transition={{delay:i*.08}}>
-<img src={U(faces[(i+3)%faces.length],96,96)} alt=""/><div><p>“{t.text}”</p><footer>{t.name}, {t.state}</footer></div></motion.blockquote>)}</div>
+<div {...fade} className="panel"><div className="ph"><b>Recent payouts</b><span><i/>Sample feed</span></div>
+{pay.slice(0,5).map(p=><div className="prow" key={p.id||p.name}><div className="chk">✓</div><div><b>{p.name}</b><small>{p.state} · {p.time}</small></div><strong>{p.amount}</strong></div>)}</div>
+<div className="quotes"><span className="kick">Player stories</span>{tests.slice(0,3).map((t,i)=><blockquote key={t.id||t.name} {...fade}>
+<img src={U(faces[(i+3)%faces.length],96,96)} alt=""/><div><p>“{t.text}”</p><footer>{t.name}, {t.state}</footer></div></blockquote>)}</div>
 </div></section>
 
 <section className="cta"><div className="wrap"><h2>The next big moment<br/><em>could be yours.</em></h2><button className="btn light" onClick={()=>go("games")}>Explore games →</button></div></section>
 <footer><div className="wrap foot-grid"><div><div className="brand light">American<span>Lottery</span></div><p>Design demonstration. Not an official U.S. state lottery.</p></div><div className="fl"><a href="#">Responsible play</a><a href="#">Privacy</a><a href="#">Terms</a></div></div></footer>
-<AnimatePresence>{toast&&<motion.div className="toast" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} exit={{opacity:0,y:20}}>{toast}</motion.div>}</AnimatePresence>
+{toast&&<div className="toast">{toast}</div>}
 </div>}
 createRoot(document.getElementById("root")).render(<App/>);

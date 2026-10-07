@@ -3,9 +3,9 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const games=[
-  {name:"American Millions",jackpot:"$125M",price:"$2",draw:"Saturday",featured:true},
-  {name:"Star 7",jackpot:"$25M",price:"$1",draw:"Wednesday"},
-  {name:"Cash 5",jackpot:"$5M",price:"$1",draw:"Daily"}
+  {name:"American Millions",jackpot:"$125M",price:"$2",draw:"Saturday",featured:true,image:"https://loremflickr.com/900/500/lottery,ticket?lock=11"},
+  {name:"Star 7",jackpot:"$25M",price:"$1",draw:"Wednesday",image:"https://loremflickr.com/900/500/lottery,balls?lock=12"},
+  {name:"Cash 5",jackpot:"$5M",price:"$1",draw:"Daily",image:"https://loremflickr.com/900/500/lottery,winner?lock=13"}
 ];
 
 const winners=[
@@ -43,7 +43,7 @@ function App(){
         </div>
       </section>
 
-      <section id="games" className="section">
+      <section id="games" className="section games-section">
         <div className="section-head"><div><span className="kicker">Featured games</span><h2>Pick your game.</h2></div><a href="#games">View all games →</a></div>
         <div className="game-grid">{games.map(g=><article className={"game-card "+(g.featured?"featured":"")} key={g.name}>
           <div className="game-top"><span className="game-mark">★</span><span className="draw-tag">{g.draw}</span></div>

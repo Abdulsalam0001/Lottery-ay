@@ -1,95 +1,36 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import "./styles.css";
-import { getPublicWinners, getPublicWithdrawals, getPublicTestimonials, mockWinners } from "./publicData";
-import { useEffect, useState } from "react";
+import React,{useEffect,useMemo,useState}from"react";
+import{createRoot}from"react-dom/client";
+import{motion,AnimatePresence}from"framer-motion";
+import"./styles.css";
+import{getPublicWinners,getPublicWithdrawals,getPublicTestimonials,mockWinners,mockWithdrawals,mockTestimonials}from"./publicData";
 
 const games=[
-  {name:"American Millions",jackpot:"$125M",price:"$2",draw:"Saturday",featured:true,image:"https://loremflickr.com/900/500/lottery,ticket?lock=11"},
-  {name:"Star 7",jackpot:"$25M",price:"$1",draw:"Wednesday",image:"https://loremflickr.com/900/500/lottery,balls?lock=12"},
-  {name:"Cash 5",jackpot:"$5M",price:"$1",draw:"Daily",image:"https://loremflickr.com/900/500/lottery,winner?lock=13"}
-];
+{name:"American Millions",jackpot:"$125M",price:"$2",draw:"SAT · 10:00 PM",tag:"JACKPOT",image:"https://images.unsplash.com/photo-1523285367489-d38aec03b5f3?auto=format&fit=crop&w=1200&q=85"},
+{name:"Star 7",jackpot:"$25M",price:"$1",draw:"WED · 10:00 PM",tag:"POPULAR",image:"https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=85"},
+{name:"Cash 5",jackpot:"$5M",price:"$1",draw:"DAILY · 10:00 PM",tag:"DAILY",image:"https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1200&q=85"}];
+const quickMarkets=[["Tonight's Draw","$125M","AMERICAN MILLIONS",true],["Next Draw","02:14:32","COUNTDOWN",false],["Tickets Sold","2.4M","THIS DRAW",false],["Recent Winners","18,420","THIS MONTH",false]];
 
 function App(){
-  const [winners,setWinners]=useState(mockWinners);
-  const [withdrawals,setWithdrawals]=useState([]);
-  const [testimonials,setTestimonials]=useState([]);
-
-  useEffect(()=>{
-    getPublicWinners().then(setWinners);
-    getPublicWithdrawals().then(setWithdrawals);
-    getPublicTestimonials().then(setTestimonials);
-  },[]);
-
-  return <div className="app">
-    <header className="nav">
-      <a className="brand" href="/">AMERICAN<span>LOTTERY</span></a>
-      <nav>
-        <a href="#games">Games</a><a href="#winners">Winners</a><a href="#results">Results</a><a href="#how">How It Works</a>
-      </nav>
-      <div className="nav-actions"><a className="signin" href="#signin">Sign In</a><a className="button button-small" href="#play">Play Now</a></div>
-      <button className="menu" aria-label="Open menu">☰</button>
-    </header>
-
-    <main>
-      <section className="hero">
-        <div className="hero-copy">
-          <div className="eyebrow"><span className="live-dot"></span> Next drawing · Saturday 10:00 PM ET</div>
-          <h1>Your numbers.<br/><em>Your chance.</em></h1>
-          <p>Play simple, exciting lottery games and check winning numbers in one trusted place.</p>
-          <div className="hero-actions"><a className="button" href="#play">Play Now <span>→</span></a><a className="text-link" href="#results">View winning numbers</a></div>
-        </div>
-        <div className="jackpot-card">
-          <span className="label">Estimated Jackpot</span>
-          <strong>$125<span>M</span></strong>
-          <div className="divider"></div>
-          <div className="countdown"><div><b>02</b><small>Days</small></div><i>:</i><div><b>14</b><small>Hours</small></div><i>:</i><div><b>32</b><small>Min</small></div></div>
-          <p>American Millions · Draw #004821</p>
-        </div>
-      </section>
-
-      <section id="games" className="section games-section">
-        <div className="section-head"><div><span className="kicker">Featured games</span><h2>Pick your game.</h2></div><a href="#games">View all games →</a></div>
-        <div className="game-grid">{games.map(g=><article className={"game-card "+(g.featured?"featured":"")} key={g.name}>
-          <div className="game-top"><span className="game-mark">★</span><span className="draw-tag">{g.draw}</span></div>
-          <h3>{g.name}</h3><div className="game-jackpot">{g.jackpot}</div><p>Estimated jackpot</p>
-          <div className="game-footer"><span>{g.price} / play</span><a href="#play">Play →</a></div>
-        </article>)}</div>
-      </section>
-
-      <section id="results" className="results section">
-        <div className="result-copy"><span className="kicker">Latest result</span><h2>Did your numbers come up?</h2><p>Check the latest American Millions drawing and compare your ticket.</p><a className="button button-dark" href="#results">View all results</a></div>
-        <div className="numbers-card"><div className="result-meta"><span>American Millions</span><span>Draw #004820</span></div><div className="balls">{[8,14,22,31,42,48].map(n=><b key={n}>{String(n).padStart(2,"0")}</b>)}</div><div className="bonus"><span>Bonus</span><b>17</b></div><small>September 30, 2026</small></div>
-      </section>
-
-      <section id="winners" className="section winners">
-        <div className="section-head"><div><span className="kicker">Real winners</span><h2>Someone wins. It could be you.</h2></div><a href="#winners">View all winners →</a></div>
-        <div className="winner-grid">{winners.slice(0,4).map(w=><article className="winner-card" key={w.id || w.name}><div className="avatar">{w.name[0]}</div><div><h3>{w.name}</h3><p>{w.state} · {w.game || "Lottery"}</p></div><strong>{w.amount}</strong></article>)}</div>
-      </section>
-
-      <section className="activity section">
-        <div className="section-head"><div><span className="kicker">Live activity</span><h2>Recent payouts.</h2></div><span className="activity-live"><i></i> Live feed</span></div>
-        <div className="activity-grid">
-          <div className="activity-card">
-            {withdrawals.slice(0,5).map(w=><div className="activity-row" key={w.id || w.name}><div className="activity-avatar">✓</div><div><b>{w.name}</b><small>{w.state} · {w.time}</small></div><strong>{w.amount}</strong></div>)}
-          </div>
-          <div className="testimonial-card">
-            <span className="kicker">Player stories</span>
-            {testimonials.slice(0,3).map(t=><blockquote key={t.id || t.name}><p>“{t.text}”</p><footer>— {t.name}, {t.state}</footer></blockquote>)}
-          </div>
-        </div>
-      </section>
-
-      <section id="how" className="how section">
-        <div><span className="kicker">How it works</span><h2>Four simple steps.</h2></div>
-        <div className="steps">{["Choose your numbers","Buy your ticket","Watch the draw","Check your win"].map((s,i)=><div className="step" key={s}><span>0{i+1}</span><h3>{s}</h3><p>Simple, clear and easy to follow.</p></div>)}</div>
-      </section>
-
-      <section className="cta"><span className="kicker">The next draw is waiting</span><h2>Ready to try your luck?</h2><a className="button button-light" href="#play">Play Now →</a></section>
-    </main>
-
-    <footer><div className="brand">AMERICAN<span>LOTTERY</span></div><p>Lottery platform prototype. Not an official U.S. state lottery.</p><div><a href="#responsible">Responsible Play</a><a href="#privacy">Privacy</a><a href="#terms">Terms</a></div></footer>
-  </div>
-}
-
-createRoot(document.getElementById("root")).render(<App />);
+const[winners,setWinners]=useState(mockWinners),[withdrawals,setWithdrawals]=useState(mockWithdrawals),[testimonials,setTestimonials]=useState(mockTestimonials),[menuOpen,setMenuOpen]=useState(false),[activeGame,setActiveGame]=useState("American Millions"),[toast,setToast]=useState("");
+useEffect(()=>{Promise.all([getPublicWinners(),getPublicWithdrawals(),getPublicTestimonials()]).then(([w,wd,t])=>{setWinners(w);setWithdrawals(wd);setTestimonials(t)})},[]);
+const featuredWinner=useMemo(()=>winners[0]||mockWinners[0],[winners]);
+const notify=m=>{setToast(m);clearTimeout(window.__lotteryToast);window.__lotteryToast=setTimeout(()=>setToast(""),2600)};
+return <div className="app">
+<div className="top-ticker"><div className="ticker-inner"><span className="ticker-live"><i/> LIVE</span><div className="ticker-track"><span>AMERICAN MILLIONS <b>$125M</b></span><span>STAR 7 <b>$25M</b></span><span>CASH 5 <b>$5M</b></span><span>NEXT DRAW <b>SAT 10:00 PM ET</b></span><span>18,420 WINNERS THIS MONTH</span></div></div></div>
+<header className="nav"><a className="brand" href="/">AMERICAN<span>LOTTERY</span><small>PLAY SMART · DREAM BIG</small></a><nav><a href="#games">Games</a><a href="#winners">Winners</a><a href="#results">Results</a><a href="#how">How It Works</a></nav><div className="nav-actions"><button className="signin" onClick={()=>notify("Sign in will be connected to the player account system.")}>Sign In</button><button className="button button-small" onClick={()=>document.getElementById("games")?.scrollIntoView({behavior:"smooth"})}>Play Now <span>↗</span></button></div><button className="menu" onClick={()=>setMenuOpen(v=>!v)} aria-label="Open menu">☰</button></header>
+<AnimatePresence>{menuOpen&&<motion.div className="mobile-menu" initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}>{["games","winners","results","how"].map(id=><a key={id} href={"#"+id} onClick={()=>setMenuOpen(false)}>{id==="how"?"How It Works":id[0].toUpperCase()+id.slice(1)}</a>)}<button onClick={()=>notify("Sign in will be connected to the player account system.")}>Sign In</button></motion.div>}</AnimatePresence>}
+<main>
+<section className="hero"><div className="hero-noise"/><div className="hero-copy"><motion.div className="eyebrow" initial={{opacity:0,y:15}} animate={{opacity:1,y:0}}><span className="live-dot"/> NEXT DRAW · SATURDAY 10:00 PM ET</motion.div><motion.h1 initial={{opacity:0,y:35}} animate={{opacity:1,y:0}} transition={{delay:.08,duration:.7}}>Your numbers.<br/><em>Your moment.</em></motion.h1><motion.p initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} transition={{delay:.16}}>A faster, sharper way to play. Follow live draws, discover the biggest jackpots and see winners in real time.</motion.p><div className="hero-actions"><button className="button hero-button" onClick={()=>document.getElementById("games")?.scrollIntoView({behavior:"smooth"})}>Explore Games <span>→</span></button><a className="text-link" href="#results">View winning numbers <span>↗</span></a></div><div className="hero-proof"><div className="proof-avatars"><i>J</i><i>M</i><i>A</i><i>+</i></div><span><b>18K+</b> winners this month</span></div></div>
+<motion.div className="hero-panel" initial={{opacity:0,scale:.94,y:20}} animate={{opacity:1,scale:1,y:0}} transition={{duration:.75,delay:.15}}><div className="panel-image"><img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1400&q=85" alt="Lottery game"/> <div className="image-overlay"/><div className="floating-chip">DRAW #004821</div><div className="floating-live"><i/> LIVE JACKPOT</div></div><div className="panel-body"><div className="panel-label">ESTIMATED JACKPOT</div><div className="mega-jackpot">$125<span>M</span></div><div className="panel-bottom"><div className="countdown"><b>02<small>DAYS</small></b><i>:</i><b>14<small>HRS</small></b><i>:</i><b>32<small>MIN</small></b></div><button onClick={()=>notify("Ticket selection is ready for the next player-flow build.")}>Play $2 →</button></div></div></motion.div></section>
+<section className="market-strip">{quickMarkets.map(([label,value,meta,live],i)=><motion.div className="market-item" key={label} initial={{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*.05}}><span className="market-label">{label}</span><strong>{value}</strong><small>{live&&<i/>}{meta}</small></motion.div>)}</section>
+<section id="games" className="section games-section"><div className="section-head"><div><span className="kicker">Featured markets</span><h2>Choose your game.</h2></div><a href="#games">View all games <span>→</span></a></div><div className="game-grid">{games.map(g=><motion.article className={"game-card "+(g.name===activeGame?"active":"")} key={g.name} onMouseEnter={()=>setActiveGame(g.name)} whileHover={{y:-8}} transition={{type:"spring",stiffness:300,damping:22}}><div className="game-image"><img src={g.image} alt="" loading="lazy"/><div className="game-image-shade"/><span className="game-tag">{g.tag}</span><span className="game-play-icon">↗</span></div><div className="game-content"><div className="game-top"><span>{g.draw}</span><b>● OPEN</b></div><h3>{g.name}</h3><div className="game-jackpot">{g.jackpot}</div><p>Estimated jackpot</p><div className="game-footer"><span>{g.price} / play</span><button onClick={()=>notify(g.name+" selected.")}>Play now <b>→</b></button></div></div></motion.article>)}</div></section>
+<section id="results" className="results section"><div className="result-visual"><img src="https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=1200&q=85" alt="Lottery balls" loading="lazy"/><div className="result-visual-overlay"/><div className="result-badge"><i/> VERIFIED DRAW</div><div className="result-draw">#004820</div></div><div className="result-copy"><span className="kicker">Latest result</span><h2>Did your numbers come up?</h2><p>Check the latest American Millions drawing and compare your ticket with the verified result.</p><div className="numbers-card"><div className="result-meta"><span>AMERICAN MILLIONS</span><span>SEP 30, 2026</span></div><div className="balls">{[8,14,22,31,42,48].map(n=><b key={n}>{String(n).padStart(2,"0")}</b>)}</div><div className="bonus"><span>Bonus</span><b>17</b></div></div><button className="button button-dark" onClick={()=>notify("Results archive will be connected to the draw engine.")}>View all results →</button></div></section>
+<section id="winners" className="section winners"><div className="section-head"><div><span className="kicker">Winning tickets</span><h2>Recent winners.</h2></div><a href="#winners">Winner archive <span>→</span></a></div><div className="winner-feature"><div className="winner-feature-image"><img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=85" alt="Happy winner" loading="lazy"/><div className="winner-feature-overlay"/><div className="winner-feature-caption"><span>RECENT WIN</span><strong>{featuredWinner.amount}</strong></div></div><div className="winner-feature-copy"><span className="kicker">Featured winner</span><h3>{featuredWinner.name}</h3><p>{featuredWinner.state} · {featuredWinner.game||"American Lottery"}</p><div className="winner-quote">“A life-changing ticket starts with one simple choice.”</div><button className="text-button" onClick={()=>notify("Winner stories are being prepared for the full platform.")}>Read winner stories →</button></div></div><div className="winner-grid">{winners.slice(0,4).map(w=><motion.article className="winner-card" key={w.id||w.name} whileHover={{y:-4}}><div className="avatar">{w.name?.[0]}</div><div><h3>{w.name}</h3><p>{w.state} · {w.game||"Lottery"}</p></div><strong>{w.amount}</strong></motion.article>)}</div></section>
+<section className="activity section"><div className="section-head"><div><span className="kicker">Platform pulse</span><h2>Live activity.</h2></div><span className="activity-live"><i/> LIVE FEED</span></div><div className="activity-grid"><div className="activity-card"><div className="activity-card-head"><b>Recent payouts</b><span>Updated just now</span></div>{withdrawals.slice(0,5).map(w=><div className="activity-row" key={w.id||w.name}><div className="activity-avatar">✓</div><div><b>{w.name}</b><small>{w.state} · {w.time}</small></div><strong>{w.amount}</strong><span className="paid-pill">PAID</span></div>)}</div><div className="testimonial-card"><span className="kicker">Player stories</span>{testimonials.slice(0,3).map((t,i)=><motion.blockquote key={t.id||t.name} initial={{opacity:0,x:15}} whileInView={{opacity:1,x:0}} viewport={{once:true}} transition={{delay:i*.1}}><p>“{t.text}”</p><footer>— {t.name}, {t.state}</footer></motion.blockquote>)}</div></div></section>
+<section id="how" className="how section"><div className="how-intro"><span className="kicker">The experience</span><h2>Simple to play.<br/><em>Built to feel fast.</em></h2><p>Everything you need is one clean tap away, from picking numbers to checking results.</p></div><div className="steps">{["Choose your numbers","Secure your ticket","Watch the draw","Check your win"].map((s,i)=><motion.div className="step" key={s} whileHover={{x:6}}><span>0{i+1}</span><h3>{s}</h3><p>{["Pick your favorite combination and game.","Your ticket is stored in your player account.","Follow draw information and verified results.","Get notified when your numbers hit."][i]}</p></motion.div>)}</div></section>
+<section className="cta"><div className="cta-orb orb-one"/><div className="cta-orb orb-two"/><span className="kicker">NEXT DRAW · SATURDAY 10:00 PM ET</span><h2>The next big moment<br/><em>could be yours.</em></h2><button className="button button-light" onClick={()=>document.getElementById("games")?.scrollIntoView({behavior:"smooth"})}>Explore games <span>↗</span></button></section>
+</main>
+<footer><div className="footer-brand"><div className="brand">AMERICAN<span>LOTTERY</span></div><p>Modern lottery platform prototype.</p></div><div className="footer-links"><a href="#responsible">Responsible Play</a><a href="#privacy">Privacy</a><a href="#terms">Terms</a></div><small>Prototype only · Not an official U.S. state lottery.</small></footer>
+<AnimatePresence>{toast&&<motion.div className="toast" initial={{opacity:0,y:20,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:20}}><i>✓</i>{toast}</motion.div>}</AnimatePresence>
+</div>}
+createRoot(document.getElementById("root")).render(<App/>);

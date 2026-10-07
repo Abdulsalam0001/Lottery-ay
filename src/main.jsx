@@ -1,6 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import { getPublicWinners, getPublicWithdrawals, getPublicTestimonials, mockWinners } from "./publicData";
+import { useEffect, useState } from "react";
 
 const games=[
   {name:"American Millions",jackpot:"$125M",price:"$2",draw:"Saturday",featured:true,image:"https://loremflickr.com/900/500/lottery,ticket?lock=11"},
@@ -8,14 +10,17 @@ const games=[
   {name:"Cash 5",jackpot:"$5M",price:"$1",draw:"Daily",image:"https://loremflickr.com/900/500/lottery,winner?lock=13"}
 ];
 
-const winners=[
-  {name:"Michael R.",state:"Texas",amount:"$2,450,000"},
-  {name:"Sarah W.",state:"California",amount:"$750,000"},
-  {name:"James T.",state:"Florida",amount:"$125,000"},
-  {name:"Angela M.",state:"New York",amount:"$50,000"}
-];
-
 function App(){
+  const [winners,setWinners]=useState(mockWinners);
+  const [withdrawals,setWithdrawals]=useState([]);
+  const [testimonials,setTestimonials]=useState([]);
+
+  useEffect(()=>{
+    getPublicWinners().then(setWinners);
+    getPublicWithdrawals().then(setWithdrawals);
+    getPublicTestimonials().then(setTestimonials);
+  },[]);
+
   return <div className="app">
     <header className="nav">
       <a className="brand" href="/">AMERICAN<span>LOTTERY</span></a>
@@ -59,7 +64,20 @@ function App(){
 
       <section id="winners" className="section winners">
         <div className="section-head"><div><span className="kicker">Real winners</span><h2>Someone wins. It could be you.</h2></div><a href="#winners">View all winners →</a></div>
-        <div className="winner-grid">{winners.map(w=><article className="winner-card" key={w.name}><div className="avatar">{w.name[0]}</div><div><h3>{w.name}</h3><p>{w.state}</p></div><strong>{w.amount}</strong></article>)}</div>
+        <div className="winner-grid">{winners.slice(0,4).map(w=><article className="winner-card" key={w.id || w.name}><div className="avatar">{w.name[0]}</div><div><h3>{w.name}</h3><p>{w.state} · {w.game || "Lottery"}</p></div><strong>{w.amount}</strong></article>)}</div>
+      </section>
+
+      <section className="activity section">
+        <div className="section-head"><div><span className="kicker">Live activity</span><h2>Recent payouts.</h2></div><span className="activity-live"><i></i> Live feed</span></div>
+        <div className="activity-grid">
+          <div className="activity-card">
+            {withdrawals.slice(0,5).map(w=><div className="activity-row" key={w.id || w.name}><div className="activity-avatar">✓</div><div><b>{w.name}</b><small>{w.state} · {w.time}</small></div><strong>{w.amount}</strong></div>)}
+          </div>
+          <div className="testimonial-card">
+            <span className="kicker">Player stories</span>
+            {testimonials.slice(0,3).map(t=><blockquote key={t.id || t.name}><p>“{t.text}”</p><footer>— {t.name}, {t.state}</footer></blockquote>)}
+          </div>
+        </div>
       </section>
 
       <section id="how" className="how section">

@@ -12,15 +12,20 @@ const games=[
 {name:"American Millions",jackpot:"$125M",price:"$2",draw:"Sat · 10:00 PM ET",tag:"Jackpot",c:"g1"},
 {name:"Star 7",jackpot:"$25M",price:"$1",draw:"Wed · 10:00 PM ET",tag:"Popular",c:"g2"},
 {name:"Cash 5",jackpot:"$5M",price:"$1",draw:"Daily · 10:00 PM ET",tag:"Daily",c:"g3"}];
-const stats=[["$125M","Tonight's jackpot"],["02:14:32","Next draw in"],["2.4M","Tickets this draw"],["18,420","Winners this month"]];
+const stats=[["$125M","Tonight's jackpot"],[countdown,"Next draw in"],["2.4M","Tickets this draw"],["18,420","Winners this month"]];
 const steps=[["Choose","Pick your numbers or let us quick-pick."],["Secure","Tickets are stored in your account."],["Watch","Follow the verified live draw."],["Collect","Get notified the moment you win."]];
 
 function App(){
 const[winners,setW]=useState(mockWinners),[pay,setP]=useState(mockWithdrawals),[tests,setT]=useState(mockTestimonials),[menu,setMenu]=useState(false),[toast,setToast]=useState("");
+const [countdown,setCountdown]=useState("02:14:32");
+useEffect(()=>{
+  const tick=()=>{const now=new Date(), target=new Date(now); target.setHours(22,0,0,0); if(target<=now) target.setDate(target.getDate()+1); const ms=target-now; const h=Math.floor(ms/36e5), m=Math.floor(ms%36e5/6e4), s=Math.floor(ms%6e4/1e3); setCountdown([h,m,s].map((v,i)=>i===0?String(v).padStart(2,"0"):String(v).padStart(2,"0")).join(":"))};
+  tick(); const id=setInterval(tick,1000); return()=>clearInterval(id);
+},[]);
 useEffect(()=>{Promise.all([getPublicWinners(),getPublicWithdrawals(),getPublicTestimonials()]).then(([w,p,t])=>{setW(w);setP(p);setT(t)})},[]);
 const notify=m=>{setToast(m);clearTimeout(window.__t);window.__t=setTimeout(()=>setToast(""),2500)};
 const go=id=>document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
-const fade={initial:{opacity:0,y:24},whileInView:{opacity:1,y:0},viewport:{once:true},transition:{duration:.55}};
+
 return<div className="app">
 <div className="demo-bar">Design demo · Illustrative photos and sample data only · Not a real lottery</div>
 <header className="nav"><a className="brand" href="/">American<span>Lottery</span></a>
@@ -31,7 +36,7 @@ return<div className="app">
 
 <section className="hero"><div className="wrap hero-grid">
 <div><span className="pill"><i/>Next draw · Saturday 10:00 PM ET</span>
-<h1>Your numbers.<br/><em>Your moment.</em></motion.h1>
+<h1>Your numbers.<br/><em>Your moment.</em></h1>
 <p>Follow live draws, explore the biggest jackpots and see verified results in one clean, trusted place.</p>
 <div className="row"><button className="btn" onClick={()=>go("games")}>Explore games →</button><a className="link" href="#results">Latest results</a></div>
 <div className="proof"><div className="stack">{faces.slice(0,4).map(f=><img key={f} src={U(f,96,96)} alt=""/>)}</div><span><b>18K+</b> players celebrated this month</span></div></div>
@@ -42,7 +47,7 @@ return<div className="app">
 
 <section className="stats"><div className="wrap stats-grid">{stats.map(([v,l])=><div key={l}><strong>{v}</strong><span>{l}</span></div>)}</div></section>
 
-<section id="games" className="sec"><div className="wrap"><div {...fade} className="head"><span className="kick">Featured games</span><h2>Choose your game</h2></div>
+<section id="games" className="sec"><div className="wrap"><div className="head"><span className="kick">Featured games</span><h2>Choose your game</h2></div>
 <div className="cards">{games.map((g,i)=><article key={g.name} {...fade} className={"game "+g.c}>
 <span className="tag">{g.tag}</span><div className="orbs"><i/><i/><i/></div><h3>{g.name}</h3><div className="amt">{g.jackpot}</div><p>{g.draw}</p>
 <div className="foot"><span>{g.price} per play</span><button onClick={()=>notify(g.name+" selected (demo).")}>Play →</button></div></article>)}</div></div></section>

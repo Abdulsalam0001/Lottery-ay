@@ -187,7 +187,7 @@ app.post("/api/demo/draws", requireDemoAdmin, async (req, res, next) => {
       return res.status(409).json({ error: "Add at least one demo entry before running a test draw." });
     }
     const winnerResult = await client.query(
-      "SELECT id, display_name, ticket_count FROM demo_entries WHERE raffle_id=$1 AND status='DEMO_ONLY' ORDER BY random() LIMIT 1 FOR UPDATE",
+      "SELECT e.id, e.display_name, e.ticket_count FROM demo_entries e JOIN LATERAL generate_series(1, e.ticket_count) AS ticket(n) ON TRUE WHERE e.raffle_id=$1 AND e.status='DEMO_ONLY' ORDER BY random() LIMIT 1",
       [raffleId],
     );
     const winner = winnerResult.rows[0];

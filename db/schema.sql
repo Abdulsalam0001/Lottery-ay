@@ -28,3 +28,29 @@ CREATE TABLE IF NOT EXISTS ticket_packages (
 
 CREATE INDEX IF NOT EXISTS raffles_active_sort_idx ON raffles (active, sort_order);
 CREATE INDEX IF NOT EXISTS ticket_packages_active_sort_idx ON ticket_packages (active, sort_order);
+
+
+-- Isolated demonstration records. These are never real paid entries.
+CREATE TABLE IF NOT EXISTS demo_entries (
+  id BIGSERIAL PRIMARY KEY,
+  raffle_id TEXT NOT NULL REFERENCES raffles(id),
+  display_name TEXT NOT NULL CHECK (char_length(display_name) BETWEEN 2 AND 60),
+  ticket_count INTEGER NOT NULL CHECK (ticket_count BETWEEN 1 AND 100),
+  demo_reference TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'DEMO_ONLY' CHECK (status IN ('DEMO_ONLY','SELECTED_IN_TEST_DRAW')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS demo_draws (
+  id BIGSERIAL PRIMARY KEY,
+  raffle_id TEXT NOT NULL REFERENCES raffles(id),
+  winning_entry_id BIGINT REFERENCES demo_entries(id),
+  winning_display_name TEXT NOT NULL,
+  demo_reference TEXT NOT NULL UNIQUE,
+  entries_count INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'SIMULATED' CHECK (status = 'SIMULATED'),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS demo_entries_raffle_created_idx ON demo_entries (raffle_id, created_at);
+CREATE INDEX IF NOT EXISTS demo_draws_raffle_created_idx ON demo_draws (raffle_id, created_at);

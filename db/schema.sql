@@ -54,3 +54,31 @@ CREATE TABLE IF NOT EXISTS demo_draws (
 
 CREATE INDEX IF NOT EXISTS demo_entries_raffle_created_idx ON demo_entries (raffle_id, created_at);
 CREATE INDEX IF NOT EXISTS demo_draws_raffle_created_idx ON demo_draws (raffle_id, created_at);
+
+
+-- Persistent public entries and one recorded draw per raffle.
+CREATE TABLE IF NOT EXISTS entries (
+  id BIGSERIAL PRIMARY KEY,
+  raffle_id TEXT NOT NULL REFERENCES raffles(id),
+  display_name TEXT NOT NULL CHECK (char_length(display_name) BETWEEN 2 AND 60),
+  email TEXT NOT NULL CHECK (char_length(email) <= 254),
+  ticket_count INTEGER NOT NULL CHECK (ticket_count BETWEEN 1 AND 100),
+  reference TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'ENTERED' CHECK (status IN ('ENTERED','SELECTED','NOT_SELECTED')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS raffle_draws (
+  id BIGSERIAL PRIMARY KEY,
+  raffle_id TEXT NOT NULL UNIQUE REFERENCES raffles(id),
+  winning_entry_id BIGINT NOT NULL REFERENCES entries(id),
+  winning_display_name TEXT NOT NULL,
+  reference TEXT NOT NULL UNIQUE,
+  entry_count INTEGER NOT NULL CHECK (entry_count > 0),
+  ticket_count INTEGER NOT NULL CHECK (ticket_count > 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS entries_raffle_status_idx ON entries (raffle_id, status);
+CREATE INDEX IF NOT EXISTS entries_created_idx ON entries (created_at DESC);
+CREATE INDEX IF NOT EXISTS raffle_draws_created_idx ON raffle_draws (created_at DESC);

@@ -15,6 +15,7 @@ const steps=[["Browse","Review the available raffle details and advertised prize
 function App(){
 const[winners,setW]=useState(mockWinners),[pay,setP]=useState(mockWithdrawals),[tests,setT]=useState(mockTestimonials),[raffles,setRaffles]=useState(previewRaffles),[ticketPackages,setTicketPackages]=useState(previewTicketPackages),[catalogStatus,setCatalogStatus]=useState("checking"),[menu,setMenu]=useState(false),[toast,setToast]=useState("");
 const [countdown,setCountdown]=useState("02:14:32");
+const [entryRaffle,setEntryRaffle]=useState(null),[entryName,setEntryName]=useState(""),[entryEmail,setEntryEmail]=useState(""),[entryCount,setEntryCount]=useState(1),[entryBusy,setEntryBusy]=useState(false),[entryResult,setEntryResult]=useState(null);
 const heroSlides=(Array.isArray(imageConfig.homepageHeroSlides)&&imageConfig.homepageHeroSlides.length?imageConfig.homepageHeroSlides:[imageConfig.homepageHero]).filter(url=>typeof url==="string"&&/^https?:\/\//i.test(url.trim()));
 const [heroIndex,setHeroIndex]=useState(0);
 const heroImage=imageUrlOr(heroSlides[heroIndex]||imageConfig.homepageHero,HERO_FALLBACK);
@@ -29,7 +30,7 @@ const stats=statsLabels.map(([v,l])=>[l==="Next draw in"?countdown:v,l]);
 const go=id=>document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
 
 return<div className="app">
-<div className="demo-bar">Design preview · Illustrative photos, prizes and draw details · No ticket sales</div>
+<div className="demo-bar">Live database entries · Payment processing is not enabled · Check official rules and eligibility before participating</div>
 <header className="nav"><a className="brand" href="/">American<span>Lucky Draw</span></a>
 <nav>{["raffles","results","winners","how"].map(i=><a key={i} href={"#"+i}>{i==="how"?"How it works":i==="raffles"?"Raffles":i[0].toUpperCase()+i.slice(1)}</a>)}</nav>
 <div className="nav-actions"><button className="ghost" onClick={()=>notify("Sign in is not connected in this demo.")}>Sign in</button><button className="btn sm" onClick={()=>go("raffles")}>Play now</button></div>
@@ -54,19 +55,19 @@ return<div className="app">
 <div className="raffle-layout"><div className="raffle-list">{raffles.map((r,i)=><article key={r.id} className={"raffle-row "+r.c}>
 <div className="raffle-mark"><span>{String(i+1).padStart(2,"0")}</span><div className="raffle-ticket-art"><i/><i/><i/></div></div>
 <div className="raffle-info"><span className="raffle-tag">{r.tag}</span><h3>{r.name}</h3><p>{r.description}</p><div className="raffle-meta"><span><b>Draw:</b> {r.draw}</span><span><b>Type:</b> {r.frequency}</span></div></div>
-<div className="raffle-prize"><small>Illustrative prize</small><strong>{r.prize}</strong><span>Ticket from <b>{r.ticket}</b></span><button onClick={()=>notify(r.name+" selected. This demonstration does not sell tickets.")}>View details →</button></div>
+<div className="raffle-prize"><small>Advertised prize</small><strong>{r.prize}</strong><span>Ticket from <b>{r.ticket}</b></span><button onClick={()=>{setEntryRaffle(r);setEntryCount(1);setEntryResult(null)}}>Enter raffle →</button></div>
 </article>)}</div>
-<aside className="price-panel" id="ticket-prices"><div className="price-heading"><span className="kick">THE TICKET WINDOW</span><h3>Ticket price list</h3><p>Sample bundle prices · demonstration only.</p></div>
-<div className="price-list">{ticketPackages.map((pkg,i)=><div key={pkg.qty} className={"price-item "+(pkg.featured?"recommended":"")}><div className="price-qty">{pkg.qty}{pkg.featured&&<span>POPULAR</span>}<small>{pkg.each}</small></div><strong>{pkg.price}</strong><button aria-label={"Select "+pkg.qty} onClick={()=>notify(pkg.qty+" selected. Checkout is not connected in this demo.")}>Select</button></div>)}</div>
+<aside className="price-panel" id="ticket-prices"><div className="price-heading"><span className="kick">THE TICKET WINDOW</span><h3>Ticket price list</h3><p>Displayed prices are catalogue information only. Checkout is not enabled.</p></div>
+<div className="price-list">{ticketPackages.map((pkg,i)=><div key={pkg.qty} className={"price-item "+(pkg.featured?"recommended":"")}><div className="price-qty">{pkg.qty}{pkg.featured&&<span>POPULAR</span>}<small>{pkg.each}</small></div><strong>{pkg.price}</strong><button aria-label={"Select "+pkg.qty} onClick={()=>{setEntryRaffle(raffles[0]||null);setEntryCount(pkg.quantity||1);setEntryResult(null)}}>Enter</button></div>)}</div>
 <div className="price-foot"><span>ⓘ</span><p>Demo prices only. No tickets can be purchased on this site. Actual raffle prices, rules and eligibility must be published by the authorized operator.</p></div>
 </aside></div>
 </div></section>
 
 <section id="results" className="sec alt"><div className="wrap split">
-<div><span className="kick">Latest result</span><h2>Did your numbers come up?</h2><p className="lead">This sample result is for layout preview only. Official results are not connected yet.</p>
-<div className="result"><div className="meta"><span>Sample raffle · Draw #004820</span><span>Sep 30, 2026</span></div>
-<div className="balls">{[8,14,22,31,42,48].map(n=><b key={n}>{String(n).padStart(2,"0")}</b>)}<b className="bonus">17</b></div></div>
-<button className="btn dark" onClick={()=>notify("Official results will be shown after a verified results source is configured.")}>Open results archive →</button></div>
+<div><span className="kick">Latest result</span><h2>Did your numbers come up?</h2><p className="lead">Results are published here only after a draw is recorded in the live database. No result is currently verified by an independent authority.</p>
+<div className="result"><div className="meta"><span>Latest recorded result</span><span>Live results API</span></div>
+<div className="balls"><b>Results</b><b>are</b><b>loaded</b><b>from</b><b>the</b><b>database</b></div></div>
+<button className="btn dark" onClick={()=>fetch("/api/results").then(r=>r.json()).then(data=>notify(Array.isArray(data)&&data.length?data.map(d=>`${d.raffleName}: ${d.winner} (${d.reference})`).join(" · "):"No recorded draws yet.")).catch(()=>notify("Could not load results."))}>Check recorded results →</button></div>
 <div className="how-list">{steps.map(([t,d],i)=><div className="step" key={t} id={i===0?"how":undefined}><span>0{i+1}</span><div><h3>{t}</h3><p>{d}</p></div></div>)}</div>
 </div></section>
 
@@ -83,6 +84,6 @@ return<div className="app">
 
 <section className="cta"><div className="wrap"><h2>Your next favourite draw<br/><em>is on the board.</em></h2><button className="btn light" onClick={()=>go("raffles")}>Explore raffle room →</button></div></section>
 <footer><div className="wrap foot-grid"><div><div className="brand light">American<span>Lottery</span></div><p>Design demonstration. Not an official U.S. state lottery.</p></div><div className="fl"><a href="#">Responsible play</a><a href="#">Privacy</a><a href="#">Terms</a></div></div></footer>
-{toast&&<div className="toast">{toast}</div>}
+{entryRaffle&&<div role="dialog" aria-modal="true" aria-label="Enter raffle" style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(8,12,18,.78)",display:"grid",placeItems:"center",padding:20}}><form onSubmit={async e=>{e.preventDefault();setEntryBusy(true);setEntryResult(null);try{const response=await fetch("/api/entries",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({raffleId:entryRaffle.id,displayName:entryName,email:entryEmail,ticketCount:Number(entryCount)})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Could not save entry");setEntryResult({ok:true,message:"Entry saved. Keep this reference: "+data.entry.reference+" · "+data.entry.ticketCount+" ticket(s). This confirms database registration only, not payment."});}catch(error){setEntryResult({ok:false,message:error.message})}finally{setEntryBusy(false)}}} style={{background:"#fff",color:"#17202c",padding:28,borderRadius:18,width:"min(100%,480px)",display:"grid",gap:14,boxShadow:"0 20px 80px #0007"}}><button type="button" onClick={()=>setEntryRaffle(null)} style={{justifySelf:"end",border:0,background:"transparent",fontSize:22,cursor:"pointer"}} aria-label="Close">×</button><span className="kick">LIVE ENTRY</span><h2 style={{margin:0}}>Enter {entryRaffle.name}</h2><p style={{margin:0}}>Your details are saved to the live database. This form does not take payment or verify lottery eligibility.</p><label>Display name<input required minLength={2} maxLength={60} value={entryName} onChange={e=>setEntryName(e.target.value)} style={{display:"block",width:"100%",padding:12,marginTop:6,border:"1px solid #ccd2d8",borderRadius:8}}/></label><label>Email address<input type="email" required maxLength={254} value={entryEmail} onChange={e=>setEntryEmail(e.target.value)} style={{display:"block",width:"100%",padding:12,marginTop:6,border:"1px solid #ccd2d8",borderRadius:8}}/></label><label>Number of entries<input type="number" min="1" max="100" required value={entryCount} onChange={e=>setEntryCount(e.target.value)} style={{display:"block",width:"100%",padding:12,marginTop:6,border:"1px solid #ccd2d8",borderRadius:8}}/></label>{entryResult&&<p role="status" style={{padding:12,borderRadius:8,background:entryResult.ok?"#e8f6ee":"#fff0ee",overflowWrap:"anywhere"}}>{entryResult.message}</p>}<button className="btn" type="submit" disabled={entryBusy}>{entryBusy?"Saving entry…":"Submit entry"}</button><button type="button" onClick={()=>setEntryRaffle(null)} style={{padding:10,background:"transparent",border:0,cursor:"pointer"}}>Close</button></form></div>}{toast&&<div className="toast">{toast}</div>}
 </div>}
 createRoot(document.getElementById("root")).render(<App/>);

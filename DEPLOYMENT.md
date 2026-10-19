@@ -25,3 +25,44 @@ Render supplies `PORT` automatically. After deployment, check `https://YOUR-WEB-
 ## Scope and safety
 
 This backend currently manages the published catalogue and sample ticket-price bundles only. It does **not** sell or reserve tickets, accept payments, run random draws, verify winners, or issue payouts. The existing prize values and schedules are illustrative seed data; replace them with operator-approved information before public operation. Do not treat the seeded sample data as a live or licensed raffle.
+
+
+## Manual backend demonstration
+
+To enable the private demo controls on the Render **Web Service**, set these environment variables:
+
+- `DEMO_MODE=true`
+- `DEMO_ADMIN_KEY` = a long, unique secret generated for this demo (keep it private; do not commit it to GitHub)
+
+Redeploy after setting the variables. The public `GET /api/demo/status` endpoint reports whether demo mode is enabled; it never returns the admin key. Admin routes require the header `x-demo-admin-key: YOUR_SECRET`.
+
+### Demonstration endpoints
+
+- `POST /api/demo/entries` — add a simulated participant and 1–100 demo tickets.
+- `GET /api/demo/entries` — list recent demo entries; optional `?raffleId=grand`.
+- `POST /api/demo/draws` — run a simulated draw for a raffle.
+- `GET /api/demo/draws` — list simulated test draws.
+
+Example commands (replace the host and key; do not put a real secret in public chat or source control):
+
+```sh
+curl -X POST https://YOUR-WEB-SERVICE/api/demo/entries \
+  -H 'Content-Type: application/json' \
+  -H 'x-demo-admin-key: YOUR_SECRET' \
+  -d '{"raffleId":"grand","displayName":"Demo Player A","ticketCount":5}'
+
+curl -X POST https://YOUR-WEB-SERVICE/api/demo/entries \
+  -H 'Content-Type: application/json' \
+  -H 'x-demo-admin-key: YOUR_SECRET' \
+  -d '{"raffleId":"grand","displayName":"Demo Player B","ticketCount":2}'
+
+curl -X POST https://YOUR-WEB-SERVICE/api/demo/draws \
+  -H 'Content-Type: application/json' \
+  -H 'x-demo-admin-key: YOUR_SECRET' \
+  -d '{"raffleId":"grand"}'
+
+curl https://YOUR-WEB-SERVICE/api/demo/entries -H 'x-demo-admin-key: YOUR_SECRET'
+curl https://YOUR-WEB-SERVICE/api/demo/draws -H 'x-demo-admin-key: YOUR_SECRET'
+```
+
+The test draw samples among simulated tickets, so an entry with five demo tickets has five times as many chances as an entry with one. Entries and draws are labelled as simulations in the API response and database. The winner selection is only a software demonstration, not a certified random draw. Do not use these endpoints for real ticket sales, prizes, or payouts. Disable demo mode by setting `DEMO_MODE=false` when finished.

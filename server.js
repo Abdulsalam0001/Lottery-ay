@@ -141,7 +141,7 @@ app.post("/api/entries", async (req, res, next) => {
     if (!raffle.rowCount) return res.status(404).json({ error: "Active raffle not found." });
     const reference = "ENT-" + crypto.randomUUID().replaceAll("-", "").slice(0, 12).toUpperCase();
     const { rows } = await pool.query(
-      "INSERT INTO entries (raffle_id, display_name, email, ticket_count, reference) VALUES ($1,$2,$3,$4,$5) RETURNING id, raffle_id AS \\"raffleId\\", display_name AS \\"displayName\\", ticket_count AS \\"ticketCount\\", reference, status, created_at AS \\"createdAt\\"",
+      "INSERT INTO entries (raffle_id, display_name, email, ticket_count, reference) VALUES ($1,$2,$3,$4,$5) RETURNING id, raffle_id AS \"raffleId\", display_name AS \"displayName\", ticket_count AS \"ticketCount\", reference, status, created_at AS \"createdAt\"",
       [raffleId, displayName, email, ticketCount, reference],
     );
     res.status(201).json({ entry: rows[0], message: "Entry saved. This does not confirm payment or eligibility for a paid lottery." });
@@ -154,7 +154,7 @@ app.get("/api/entries/lookup", async (req, res, next) => {
   if (!/^ENT-[A-F0-9]{12}$/.test(reference)) return res.status(400).json({ error: "Enter a valid entry reference." });
   try {
     const { rows } = await pool.query(
-      "SELECT e.reference, e.display_name AS \\"displayName\\", e.ticket_count AS \\"ticketCount\\", e.status, e.created_at AS \\"createdAt\\", r.name AS \\"raffleName\\" FROM entries e JOIN raffles r ON r.id=e.raffle_id WHERE e.reference=$1",
+      "SELECT e.reference, e.display_name AS \"displayName\", e.ticket_count AS \"ticketCount\", e.status, e.created_at AS \"createdAt\", r.name AS \"raffleName\" FROM entries e JOIN raffles r ON r.id=e.raffle_id WHERE e.reference=$1",
       [reference],
     );
     if (!rows.length) return res.status(404).json({ error: "No entry found for that reference." });
@@ -211,7 +211,7 @@ app.post("/api/admin/draws", requireAdmin, async (req, res, next) => {
     await client.query("UPDATE entries SET status='NOT_SELECTED' WHERE raffle_id=$1 AND status='ENTERED'", [raffleId]);
     await client.query("UPDATE entries SET status='SELECTED' WHERE id=$1", [winner.id]);
     const result = await client.query(
-      "INSERT INTO raffle_draws (raffle_id, winning_entry_id, winning_display_name, reference, entry_count, ticket_count) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, raffle_id AS \\"raffleId\\", winning_display_name AS winner, reference, entry_count AS \\"entryCount\\", ticket_count AS \\"ticketCount\\", created_at AS \\"drawnAt\\"",
+      "INSERT INTO raffle_draws (raffle_id, winning_entry_id, winning_display_name, reference, entry_count, ticket_count) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, raffle_id AS \"raffleId\", winning_display_name AS winner, reference, entry_count AS \"entryCount\", ticket_count AS \"ticketCount\", created_at AS \"drawnAt\"",
       [raffleId, winner.id, winner.display_name, reference, counts.rows[0].entries, counts.rows[0].tickets],
     );
     await client.query("COMMIT");

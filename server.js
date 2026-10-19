@@ -1,4 +1,5 @@
 import express from "express";
+import crypto from "node:crypto";
 import pg from "pg";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -112,6 +113,108 @@ app.get("/api/ticket-packages", async (_req, res, next) => {
     );
     res.setHeader("Cache-Control", "no-store");
     res.json(rows.map(formatPackage));
+  } catch (error) { next(error); }
+});
+
+
+const demoModeEnabled = () => process.env.DEMO_MODE === "true";
+function requireDemoAdmin(req, res, next) {
+  const configuredKey = process.env.DEMO_ADMIN_KEY;
+  if (!demoModeEnabled()) return res.status(404).json({ error: "Demo tools are disabled." });
+  if (!configuredKey || !req.get("x-demo-admin-key") || req.get("x-demo-admin-key") !== configuredKey) {
+    return res.status(401).json({ error: "A valid demo admin key is required." });
+  }
+  next();
+}
+
+app.get("/api/demo/status", (_req, res) => {
+  res.json({ enabled: demoModeEnabled(), realMoney: false, label: "SIMULATION ONLY" });
+});
+
+app.get("/api/demo/entries", requireDemoAdmin, async (req, res, next) => {
+  if (!pool) return res.status(503).json({ error: "Database is not configured." });
+  try {
+    const raffleId = String(req.query.raffleId || "");
+    const { rows } = await pool.query(
+      `SELECT e.id, e.raffle_id AS "raffleId", r.name AS "raffleName", e.display_name AS "displayName",
+              e.ticket_count AS "ticketCount", e.demo_reference AS "reference", e.status, e.created_at AS "createdAt"
+       FROM demo_entries e JOIN raffles r ON r.id=e.raffle_id
+       WHERE ($1 = '' OR e.raffle_id = $1) ORDER BY e.created_at DESC LIMIT 250`,
+      [raffleId],
+    );
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ simulationOnly: true, entries: rows });
+  } catch (error) { next(error); }
+});
+
+app.post("/api/demo/entries", requireDemoAdmin, async (req, res, next) => {
+  if (!pool) return res.status(503).json({ error: "Database is not configured." });
+  const raffleId = typeof req.body?.raffleId === "string" ? req.body.raffleId.trim() : "";
+  const displayName = typeof req.body?.displayName === "string" ? req.body.displayName.trim() : "";
+  const ticketCount = Number(req.body?.ticketCount);
+  if (!raffleId || displayName.length < 2 || displayName.length > 60 ||
+      !Number.isInteger(ticketCount) || ticketCount < 1 || ticketCount > 100) {
+    return res.status(400).json({ error: "Provide a raffleId, a 2–60 character displayName, and ticketCount from 1 to 100." });
+  }
+  try {
+    const raffle = await pool.query("SELECT id FROM raffles WHERE id=$1 AND active=TRUE", [raffleId]);
+    if (!raffle.rowCount) return res.status(404).json({ error: "Active raffle not found." });
+    const reference = "DEMO-" + crypto.randomUUID().slice(0, 8).toUpperCase();
+    const { rows } = await pool.query(
+      "INSERT INTO demo_entries (raffle_id, display_name, ticket_count, demo_reference) VALUES ($1,$2,$3,$4) RETURNING id, raffle_id AS \"raffleId\", display_name AS \"displayName\", ticket_count AS \"ticketCount\", demo_reference AS reference, status, created_at AS \"createdAt\"",
+      [raffleId, displayName, ticketCount, reference],
+    );
+    res.status(201).json({ simulationOnly: true, entry: rows[0] });
+  } catch (error) { next(error); }
+});
+
+app.post("/api/demo/draws", requireDemoAdmin, async (req, res, next) => {
+  if (!pool) return res.status(503).json({ error: "Database is not configured." });
+  const raffleId = typeof req.body?.raffleId === "string" ? req.body.raffleId.trim() : "";
+  if (!raffleId) return res.status(400).json({ error: "raffleId is required." });
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [raffleId]);
+    const raffle = await client.query("SELECT id FROM raffles WHERE id=$1 AND active=TRUE", [raffleId]);
+    if (!raffle.rowCount) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Active raffle not found." });
+    }
+    const counts = await client.query("SELECT COUNT(*)::int AS entries, COALESCE(SUM(ticket_count),0)::int AS tickets FROM demo_entries WHERE raffle_id=$1 AND status='DEMO_ONLY'", [raffleId]);
+    if (counts.rows[0].entries < 1) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ error: "Add at least one demo entry before running a test draw." });
+    }
+    const winnerResult = await client.query(
+      "SELECT id, display_name, ticket_count FROM demo_entries WHERE raffle_id=$1 AND status='DEMO_ONLY' ORDER BY random() LIMIT 1 FOR UPDATE",
+      [raffleId],
+    );
+    const winner = winnerResult.rows[0];
+    const reference = "TEST-DRAW-" + crypto.randomUUID().slice(0, 8).toUpperCase();
+    await client.query("UPDATE demo_entries SET status='SELECTED_IN_TEST_DRAW' WHERE id=$1", [winner.id]);
+    const draw = await client.query(
+      "INSERT INTO demo_draws (raffle_id, winning_entry_id, winning_display_name, demo_reference, entries_count) VALUES ($1,$2,$3,$4,$5) RETURNING id, raffle_id AS \"raffleId\", winning_display_name AS \"winner\", demo_reference AS reference, entries_count AS \"entriesCount\", status, created_at AS \"createdAt\"",
+      [raffleId, winner.id, winner.display_name, reference, counts.rows[0].entries],
+    );
+    await client.query("COMMIT");
+    res.status(201).json({ simulationOnly: true, notice: "SIMULATED TEST RESULT — NOT A REAL DRAW OR WINNER ANNOUNCEMENT", draw: draw.rows[0], eligibleDemoEntries: counts.rows[0].entries, demoTickets: counts.rows[0].tickets });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    next(error);
+  } finally { client.release(); }
+});
+
+app.get("/api/demo/draws", requireDemoAdmin, async (req, res, next) => {
+  if (!pool) return res.status(503).json({ error: "Database is not configured." });
+  try {
+    const { rows } = await pool.query(
+      `SELECT d.id, d.raffle_id AS "raffleId", r.name AS "raffleName", d.winning_display_name AS winner,
+              d.demo_reference AS reference, d.entries_count AS "entriesCount", d.status, d.created_at AS "createdAt"
+       FROM demo_draws d JOIN raffles r ON r.id=d.raffle_id ORDER BY d.created_at DESC LIMIT 100`,
+    );
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ simulationOnly: true, draws: rows });
   } catch (error) { next(error); }
 });
 

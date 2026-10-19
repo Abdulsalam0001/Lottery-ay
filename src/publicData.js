@@ -1,3 +1,32 @@
+export const previewRaffles = [
+  { id:"grand", name:"The Grand Prize Raffle", prize:"$125,000", ticket:"$2", draw:"Saturday · 10:00 PM ET", frequency:"Weekly draw", tag:"Featured", c:"g1", description:"Our featured draw with one headline prize and additional cash awards." },
+  { id:"community", name:"Community Cash Raffle", prize:"$25,000", ticket:"$1", draw:"Wednesday · 8:00 PM ET", frequency:"Midweek draw", tag:"Midweek", c:"g2", description:"A smaller weekly raffle with a straightforward entry price." },
+  { id:"daily", name:"Daily Bonus Raffle", prize:"$5,000", ticket:"$1", draw:"Daily · 7:00 PM ET", frequency:"Daily draw", tag:"Daily", c:"g3", description:"A simple daily draw for people who prefer a smaller prize pool." }
+];
+
+export const previewTicketPackages = [
+  { id:"one", qty:"1 ticket", price:"$2", each:"$2.00 per ticket", featured:false },
+  { id:"five", qty:"5 tickets", price:"$9", each:"$1.80 per ticket", featured:false },
+  { id:"ten", qty:"10 tickets", price:"$16", each:"$1.60 per ticket", featured:true },
+  { id:"twenty-five", qty:"25 tickets", price:"$35", each:"$1.40 per ticket", featured:false }
+];
+
+export async function getRaffleCatalog() {
+  const base = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+  try {
+    const responses = await Promise.all([
+      fetch(base + "/api/raffles", { headers: { Accept: "application/json" } }),
+      fetch(base + "/api/ticket-packages", { headers: { Accept: "application/json" } })
+    ]);
+    if (!responses[0].ok || !responses[1].ok) throw new Error("Catalogue API unavailable");
+    const data = await Promise.all([responses[0].json(), responses[1].json()]);
+    if (!Array.isArray(data[0]) || !Array.isArray(data[1])) throw new Error("Invalid catalogue response");
+    return { raffles: data[0], ticketPackages: data[1], connected: true };
+  } catch {
+    return { raffles: previewRaffles, ticketPackages: previewTicketPackages, connected: false };
+  }
+}
+
 export const mockWinners = [
   { id:"w-1001", name:"Michael R.", state:"Texas", amount:"$2,450,000", game:"American Millions", date:"Oct 04, 2026" },
   { id:"w-1002", name:"Sarah W.", state:"California", amount:"$750,000", game:"American Millions", date:"Oct 02, 2026" },

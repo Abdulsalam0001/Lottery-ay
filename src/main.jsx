@@ -8,7 +8,7 @@ const U=(id,w=600,h=600)=>`https://images.unsplash.com/${id}?auto=format&fit=cro
 const faces=[
 "photo-1507003211169-0a1dd7228f2d","photo-1494790108377-be9c29b29330","photo-1500648767791-00dcc994a43e",
 "photo-1438761681033-6461ffad8d80","photo-1472099645785-5658abf4ff4e","photo-1544005313-94ddf0286df2"];
-const HERO=imageUrlOr(imageConfig.homepageHero,U("photo-1529156069898-49953e39b3ac",1400,1000));
+const HERO_FALLBACK=U("photo-1529156069898-49953e39b3ac",1400,1000);
 const games=[
 {name:"American Millions",jackpot:"$125M",price:"$2",draw:"Sat · 10:00 PM ET",tag:"Jackpot",c:"g1"},
 {name:"Star 7",jackpot:"$25M",price:"$1",draw:"Wed · 10:00 PM ET",tag:"Popular",c:"g2"},
@@ -19,11 +19,15 @@ const steps=[["Choose","Pick your numbers or let us quick-pick."],["Secure","Tic
 function App(){
 const[winners,setW]=useState(mockWinners),[pay,setP]=useState(mockWithdrawals),[tests,setT]=useState(mockTestimonials),[menu,setMenu]=useState(false),[toast,setToast]=useState("");
 const [countdown,setCountdown]=useState("02:14:32");
+const heroSlides=(Array.isArray(imageConfig.homepageHeroSlides)&&imageConfig.homepageHeroSlides.length?imageConfig.homepageHeroSlides:[imageConfig.homepageHero]).filter(url=>typeof url==="string"&&/^https?:\/\//i.test(url.trim()));
+const [heroIndex,setHeroIndex]=useState(0);
+const heroImage=imageUrlOr(heroSlides[heroIndex]||imageConfig.homepageHero,HERO_FALLBACK);
 useEffect(()=>{
   const tick=()=>{const now=new Date(), target=new Date(now); target.setHours(22,0,0,0); if(target<=now) target.setDate(target.getDate()+1); const ms=target-now; const h=Math.floor(ms/36e5), m=Math.floor(ms%36e5/6e4), s=Math.floor(ms%6e4/1e3); setCountdown([h,m,s].map((v,i)=>i===0?String(v).padStart(2,"0"):String(v).padStart(2,"0")).join(":"))};
   tick(); const id=setInterval(tick,1000); return()=>clearInterval(id);
 },[]);
 useEffect(()=>{Promise.all([getPublicWinners(),getPublicWithdrawals(),getPublicTestimonials()]).then(([w,p,t])=>{setW(w);setP(p);setT(t)})},[]);
+useEffect(()=>{if(heroSlides.length<2)return;const id=setInterval(()=>setHeroIndex(i=>(i+1)%heroSlides.length),5000);return()=>clearInterval(id)},[heroSlides.length]);
 const notify=m=>{setToast(m);clearTimeout(window.__t);window.__t=setTimeout(()=>setToast(""),2500)};
 const stats=statsLabels.map(([v,l])=>[l==="Next draw in"?countdown:v,l]);
 const go=id=>document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
@@ -43,7 +47,7 @@ return<div className="app">
 <div className="row"><button className="btn" onClick={()=>go("games")}>Explore games →</button><a className="link" href="#results">Latest results</a></div>
 <div className="proof"><div className="stack">{faces.slice(0,4).map((f,i)=><img key={f} src={imageUrlOr(imageConfig.playerAvatars[i],U(f,96,96))} alt=""/>)}</div><span><b>18K+</b> players celebrated this month</span></div></div>
 <div className="hero-card">
-<img src={HERO} alt="Friends celebrating together"/><div className="shade"/>
+<img className="hero-slide-image" src={heroImage} alt="Older adults enjoying life together" key={heroImage}/><div className="shade"/>{heroSlides.length>1&&<div className="hero-dots" aria-label="Choose hero slide">{heroSlides.map((src,i)=><button key={src} className={i===heroIndex?"active":""} aria-label={"Show hero image "+(i+1)} aria-pressed={i===heroIndex} onClick={()=>setHeroIndex(i)}/>)}</div>}
 <div className="jack"><small>Estimated jackpot</small><strong>$125<span>M</span></strong><button className="btn light" onClick={()=>notify("Ticket flow is not part of this demo.")}>Play $2</button></div></div>
 </div></section>
 

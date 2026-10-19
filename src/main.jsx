@@ -40,47 +40,47 @@ const go=id=>document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
 
 return<div className="app">
 <div className="demo-bar">Design preview · Illustrative photos, prizes and draw details · No ticket sales</div>
-<header className="nav"><a className="brand" href="/">American<span>Lottery</span></a>
+<header className="nav"><a className="brand" href="/">American<span>Lucky Draw</span></a>
 <nav>{["raffles","results","winners","how"].map(i=><a key={i} href={"#"+i}>{i==="how"?"How it works":i==="raffles"?"Raffles":i[0].toUpperCase()+i.slice(1)}</a>)}</nav>
-<div className="nav-actions"><button className="ghost" onClick={()=>notify("Sign in is not connected in this demo.")}>Sign in</button><button className="btn sm" onClick={()=>go("games")}>Play now</button></div>
+<div className="nav-actions"><button className="ghost" onClick={()=>notify("Sign in is not connected in this demo.")}>Sign in</button><button className="btn sm" onClick={()=>go("raffles")}>Play now</button></div>
 <button className="burger" aria-label="Menu" onClick={()=>setMenu(v=>!v)}>☰</button></header>
 {menu&&<div className="mobile">{["raffles","results","winners","how"].map(i=><a key={i} href={"#"+i} onClick={()=>setMenu(false)}>{i==="how"?"How it works":i==="raffles"?"Raffles":i[0].toUpperCase()+i.slice(1)}</a>)}</div>}
 
 <section className="hero"><div className="wrap hero-grid">
-<div><span className="pill"><i/>Established tradition · Clear draw information</span>
-<h1>A little hope.<br/><em>A fairer draw.</em></h1>
-<p>Explore scheduled raffles, review ticket prices before you enter, and find draw results in one familiar, easy-to-follow place.</p>
-<div className="row"><button className="btn" onClick={()=>go("raffles")}>View current raffles →</button><a className="link" href="#results">Latest results</a></div>
+<div><span className="pill"><i/>THE HOUSE OF CLASSIC RAFFLES</span>
+<h1>Step into the<br/><em>Lucky Lounge.</em></h1>
+<p>Discover featured prize draws, compare ticket bundles, and explore the latest results in a classic casino-inspired setting.</p>
+<div className="row"><button className="btn" onClick={()=>go("raffles")}>Explore the tables →</button><a className="link" href="#results">Latest results</a></div>
 <div className="proof"><div className="stack">{faces.slice(0,4).map((f,i)=><img key={f} src={imageUrlOr(imageConfig.playerAvatars[i],U(f,96,96))} alt=""/>)}</div><span><b>18K+</b> sample community figure</span></div></div>
 <div className="hero-card">
 <img className="hero-slide-image" src={heroImage} alt="Older adults enjoying life together" key={heroImage}/><div className="shade"/>{heroSlides.length>1&&<div className="hero-dots" aria-label="Choose hero slide">{heroSlides.map((src,i)=><button key={src} className={i===heroIndex?"active":""} aria-label={"Show hero image "+(i+1)} aria-pressed={i===heroIndex} onClick={()=>setHeroIndex(i)}/>)}</div>}
-<div className="jack"><small>Featured raffle · illustrative prize</small><strong>$125<span>K</span></strong><button className="btn light" onClick={()=>go("raffles")}>View raffle details</button></div></div>
+<div className="jack"><small>TONIGHT’S FEATURED DRAW · DEMO</small><strong>$125<span>K</span></strong><button className="btn light" onClick={()=>go("raffles")}>See the prize board</button></div></div>
 </div></section>
 
 <section className="stats"><div className="wrap stats-grid">{stats.map(([v,l])=><div key={l}><strong>{v}</strong><span>{l}</span></div>)}</div></section>
 
 <section id="raffles" className="sec raffle-section"><div className="wrap">
-<div className="section-top"><div className="head"><span className="kick">Current draws</span><h2>Raffles & prize draws</h2><p className="lead">Review the prize, draw schedule and entry price before making a choice.</p></div><span className="official-note"><i/> DEMO SCHEDULE</span></div>
+<div className="section-top"><div className="head"><span className="kick">THE RAFFLE ROOM</span><h2>Choose your lucky draw</h2><p className="lead">Big prize displays, clear draw times, and ticket prices at a glance.</p></div><span className="official-note"><i/> DEMO PRIZE BOARD</span></div>
 <div className="raffle-layout"><div className="raffle-list">{raffles.map((r,i)=><article key={r.id} className={"raffle-row "+r.c}>
 <div className="raffle-mark"><span>{String(i+1).padStart(2,"0")}</span><div className="raffle-ticket-art"><i/><i/><i/></div></div>
 <div className="raffle-info"><span className="raffle-tag">{r.tag}</span><h3>{r.name}</h3><p>{r.description}</p><div className="raffle-meta"><span><b>Draw:</b> {r.draw}</span><span><b>Type:</b> {r.frequency}</span></div></div>
 <div className="raffle-prize"><small>Illustrative prize</small><strong>{r.prize}</strong><span>Ticket from <b>{r.ticket}</b></span><button onClick={()=>notify(r.name+" selected. This demonstration does not sell tickets.")}>View details →</button></div>
 </article>)}</div>
-<aside className="price-panel" id="ticket-prices"><div className="price-heading"><span className="kick">Simple price list</span><h3>Ticket bundles</h3><p>Illustrative pricing for the design preview.</p></div>
+<aside className="price-panel" id="ticket-prices"><div className="price-heading"><span className="kick">THE TICKET WINDOW</span><h3>Ticket price list</h3><p>Sample bundle prices · demonstration only.</p></div>
 <div className="price-list">{ticketPackages.map((pkg,i)=><div key={pkg.qty} className={"price-item "+(pkg.featured?"recommended":"")}><div className="price-qty">{pkg.qty}{pkg.featured&&<span>POPULAR</span>}<small>{pkg.each}</small></div><strong>{pkg.price}</strong><button aria-label={"Select "+pkg.qty} onClick={()=>notify(pkg.qty+" selected. Checkout is not connected in this demo.")}>Select</button></div>)}</div>
 <div className="price-foot"><span>ⓘ</span><p>Demo prices only. No tickets can be purchased on this site. Actual raffle prices, rules and eligibility must be published by the authorized operator.</p></div>
 </aside></div>
 </div></section>
 
 <section id="results" className="sec alt"><div className="wrap split">
-<div><span className="kick">Latest result</span><h2>Did your numbers come up?</h2><p className="lead">Compare your ticket with the verified American Millions draw.</p>
+<div><span className="kick">Latest result</span><h2>Did your numbers come up?</h2><p className="lead">Compare your ticket with the verified latest featured draw.</p>
 <div className="result"><div className="meta"><span>Sample raffle · Draw #004820</span><span>Sep 30, 2026</span></div>
 <div className="balls">{[8,14,22,31,42,48].map(n=><b key={n}>{String(n).padStart(2,"0")}</b>)}<b className="bonus">17</b></div></div>
-<button className="btn dark" onClick={()=>notify("Results archive is not connected in this demo.")}>View all results →</button></div>
+<button className="btn dark" onClick={()=>notify("Results archive is not connected in this demo.")}>Open results archive →</button></div>
 <div className="how-list">{steps.map(([t,d],i)=><div className="step" key={t} id={i===0?"how":undefined}><span>0{i+1}</span><div><h3>{t}</h3><p>{d}</p></div></div>)}</div>
 </div></section>
 
-<section id="winners" className="sec"><div className="wrap"><div className="head"><span className="kick">Celebrating players</span><h2>Recent winners</h2><p className="note">Illustrative stock photos and sample names for design demonstration. Not real winners.</p></div>
+<section id="winners" className="sec"><div className="wrap"><div className="head"><span className="kick">The winners’ gallery</span><h2>Recent winners</h2><p className="note">Illustrative stock photos and sample names for design demonstration. Not real winners.</p></div>
 <div className="winners">{winners.slice(0,6).map((w,i)=><article key={w.id||w.name} className="winner">
 <img src={imageUrlOr(w.imageUrl,imageUrlOr(imageConfig.winnerFallbacks[i],U(faces[i%faces.length],240,240)))} alt={"Photo of "+w.name} loading="lazy"/><div><h3>{w.name}</h3><p>{w.state} · {w.game}</p></div><strong>{w.amount}</strong></article>)}</div></div></section>
 
@@ -91,7 +91,7 @@ return<div className="app">
 <img src={imageUrlOr(imageConfig.testimonials[i],U(faces[(i+3)%faces.length],96,96))} alt=""/><div><p>“{t.text}”</p><footer>{t.name}, {t.state}</footer></div></blockquote>)}</div>
 </div></section>
 
-<section className="cta"><div className="wrap"><h2>Explore the next draw<br/><em>with all the details.</em></h2><button className="btn light" onClick={()=>go("games")}>Browse raffles →</button></div></section>
+<section className="cta"><div className="wrap"><h2>Your next favourite draw<br/><em>is on the board.</em></h2><button className="btn light" onClick={()=>go("games")}>Explore raffle room →</button></div></section>
 <footer><div className="wrap foot-grid"><div><div className="brand light">American<span>Lottery</span></div><p>Design demonstration. Not an official U.S. state lottery.</p></div><div className="fl"><a href="#">Responsible play</a><a href="#">Privacy</a><a href="#">Terms</a></div></div></footer>
 {toast&&<div className="toast">{toast}</div>}
 </div>}

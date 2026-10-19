@@ -1,68 +1,46 @@
-# Lottery-ay backend deployment
+# Lottery-ay live database setup
 
-The React raffle catalogue now reads from a PostgreSQL-backed API. The server serves the built Vite site and exposes:
+The Node/Express app serves the built React website and connects to PostgreSQL.
 
-- `GET /api/health` — backend/database health
-- `GET /api/raffles` — active raffle catalogue
-- `GET /api/ticket-packages` — active ticket bundle pricing
-- `GET /api/results` — deliberately disabled until an official, verifiable results source is configured
+## Render setup
 
-On first startup, the server creates the catalogue tables from `db/schema.sql` and inserts the example catalogue rows only when those IDs do not already exist. Subsequent startups will not overwrite changes made directly in the database.
+Create a **Node.js Web Service** for this repository. A Static Site cannot run the API.
 
-## Deploy on Render
+- Build command: `npm install && npm run build`
+- Start command: `npm start`
+- Environment variables:
+  - `NODE_ENV=production`
+  - `DATABASE_URL` = PostgreSQL connection string (Render PostgreSQL or Neon)
+  - `ADMIN_API_KEY` = a long, unique secret used only by the operator for protected admin API routes
 
-The existing static-site deployment cannot run this Node/Express API. Create a **Web Service** for this repository (or change the deployment architecture to a Node web service) and configure:
+Do not commit database URLs or admin keys to GitHub. On first startup, the service applies `db/schema.sql` and seeds the catalogue rows if they do not already exist. The database user must be allowed to create tables and indexes.
 
-- **Build command:** `npm install && npm run build`
-- **Start command:** `npm start`
-- **Environment:** `NODE_ENV=production`
-- **Environment:** `DATABASE_URL` = your PostgreSQL connection string (keep this secret; never commit it to GitHub)
+After deployment, verify `https://YOUR-SERVICE-URL/api/health` returns `{"ok":true,"database":"connected"}`. Check `/api/raffles`, `/api/ticket-packages`, and `/api/results` for live database-backed data.
 
-Use a PostgreSQL database from Render or a managed provider such as Neon. If your database provider requires SSL, the production server configures PostgreSQL SSL. Ensure the database user can create tables and indexes during initial setup.
+## Live entry endpoints
 
-Render supplies `PORT` automatically. After deployment, check `https://YOUR-WEB-SERVICE-URL/api/health`; a successful response should contain `{"ok":true,"database":"connected"}`. The raffle section should then display **DATABASE CONNECTED**. If the database is missing/unreachable, the frontend deliberately falls back to labelled preview data.
+- `POST /api/entries` — save an entry with `raffleId`, `displayName`, `email`, and `ticketCount` (1–100). Returns a unique entry reference.
+- `GET /api/entries/lookup?reference=ENT-...` — retrieve a specific entry by its reference.
+- `GET /api/admin/entries` — list recent entries (protected).
+- `POST /api/admin/draws` — record a draw for a raffle (protected; one draw per raffle ID).
+- `GET /api/results` — list recorded draw results.
 
-## Scope and safety
-
-This backend currently manages the published catalogue and sample ticket-price bundles only. It does **not** sell or reserve tickets, accept payments, run random draws, verify winners, or issue payouts. The existing prize values and schedules are illustrative seed data; replace them with operator-approved information before public operation. Do not treat the seeded sample data as a live or licensed raffle.
-
-
-## Manual backend demonstration
-
-To enable the private demo controls on the Render **Web Service**, set these environment variables:
-
-- `DEMO_MODE=true`
-- `DEMO_ADMIN_KEY` = a long, unique secret generated for this demo (keep it private; do not commit it to GitHub)
-
-Redeploy after setting the variables. The public `GET /api/demo/status` endpoint reports whether demo mode is enabled; it never returns the admin key. Admin routes require the header `x-demo-admin-key: YOUR_SECRET`.
-
-### Demonstration endpoints
-
-- `POST /api/demo/entries` — add a simulated participant and 1–100 demo tickets.
-- `GET /api/demo/entries` — list recent demo entries; optional `?raffleId=grand`.
-- `POST /api/demo/draws` — run a simulated draw for a raffle.
-- `GET /api/demo/draws` — list simulated test draws.
-
-Example commands (replace the host and key; do not put a real secret in public chat or source control):
+Protected endpoints require the header `x-admin-key: YOUR_ADMIN_API_KEY`. Example:
 
 ```sh
-curl -X POST https://YOUR-WEB-SERVICE/api/demo/entries \
+curl -X POST https://YOUR-SERVICE-URL/api/admin/draws \
   -H 'Content-Type: application/json' \
-  -H 'x-demo-admin-key: YOUR_SECRET' \
-  -d '{"raffleId":"grand","displayName":"Demo Player A","ticketCount":5}'
-
-curl -X POST https://YOUR-WEB-SERVICE/api/demo/entries \
-  -H 'Content-Type: application/json' \
-  -H 'x-demo-admin-key: YOUR_SECRET' \
-  -d '{"raffleId":"grand","displayName":"Demo Player B","ticketCount":2}'
-
-curl -X POST https://YOUR-WEB-SERVICE/api/demo/draws \
-  -H 'Content-Type: application/json' \
-  -H 'x-demo-admin-key: YOUR_SECRET' \
+  -H 'x-admin-key: YOUR_ADMIN_API_KEY' \
   -d '{"raffleId":"grand"}'
 
-curl https://YOUR-WEB-SERVICE/api/demo/entries -H 'x-demo-admin-key: YOUR_SECRET'
-curl https://YOUR-WEB-SERVICE/api/demo/draws -H 'x-demo-admin-key: YOUR_SECRET'
+curl https://YOUR-SERVICE-URL/api/admin/entries \
+  -H 'x-admin-key: YOUR_ADMIN_API_KEY'
 ```
 
-The test draw samples among simulated tickets, so an entry with five demo tickets has five times as many chances as an entry with one. Entries and draws are labelled as simulations in the API response and database. The winner selection is only a software demonstration, not a certified random draw. Do not use these endpoints for real ticket sales, prizes, or payouts. Disable demo mode by setting `DEMO_MODE=false` when finished.
+The draw endpoint weights the selection by each entry's ticket count, updates entry statuses, records the result transactionally, and uses a database lock to prevent concurrent draws for the same raffle. A unique database constraint prevents recording more than one draw for the same raffle ID.
+
+## Important operational limits
+
+This is now a live database-backed entry workflow, but **it is not a complete real-money lottery service**. The form records entries; it does not charge for tickets, verify payments, authenticate participant accounts, validate age/location eligibility, or establish legal eligibility. Catalogue prize values and schedules are seed examples and must be replaced with operator-approved information. Draw code is a basic application implementation, not a certified or independently audited lottery draw. Do not collect payments, advertise guaranteed prizes, or award prizes until the operator has confirmed applicable licensing, official rules, eligibility controls, privacy protections, and draw requirements.
+
+Before opening publicly, add rate limiting and abuse protection, email verification, data retention/privacy terms, operator authentication with proper key rotation, draw closure rules, a reviewed auditable randomness design, and tested database backups. The admin API key must remain private.

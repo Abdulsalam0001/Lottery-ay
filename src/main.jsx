@@ -72,16 +72,7 @@ return<div className="app">
 <div className="how-list">{steps.map(([t,d],i)=><div className="step" key={t} id={i===0?"how":undefined}><span>0{i+1}</span><div><h3>{t}</h3><p>{d}</p></div></div>)}</div>
 </div></section>
 
-<section id="winners" className="sec"><div className="wrap"><div className="head"><span className="kick">The winners’ gallery</span><h2>Recent winners</h2><p className="note">Winner announcements appear only when verified operator-approved results are published. The profiles below are not connected to the live draw system.</p></div>
-<div className="winners">{winners.slice(0,6).map((w,i)=><article key={w.id||w.name} className="winner">
-<img src={imageUrlOr(w.imageUrl,imageUrlOr(imageConfig.winnerFallbacks[i],U(faces[i%faces.length],240,240)))} alt={"Photo of "+w.name} loading="lazy"/><div><h3>{w.name}</h3><p>{w.state} · {w.game}</p></div><strong>{w.amount}</strong></article>)}</div></div></section>
-
-<section className="sec alt"><div className="wrap split">
-<div className="panel"><div className="ph"><b>Payout feed unavailable</b><span><i/>Not connected</span></div>
-{pay.slice(0,5).map(p=><div className="prow" key={p.id||p.name}><div className="chk">✓</div><div><b>{p.name}</b><small>{p.state} · {p.time}</small></div><strong>{p.amount}</strong></div>)}</div>
-<div className="quotes"><span className="kick">Player stories</span>{tests.slice(0,3).map((t,i)=><blockquote key={t.id||t.name}>
-<img src={imageUrlOr(imageConfig.testimonials[i],U(faces[(i+3)%faces.length],96,96))} alt=""/><div><p>“{t.text}”</p><footer>{t.name}, {t.state}</footer></div></blockquote>)}</div>
-</div></section>
+<section className="sec"><div className="wrap"><div className="head"><span className="kick">Live feed</span><h2>Winner and payout updates</h2><p className="lead">Winner profiles, testimonials, and payout records will appear here only after a real verified source is connected. No payout information is currently published.</p></div></div></section>
 
 <section className="cta"><div className="wrap"><h2>Your next favourite draw<br/><em>is on the board.</em></h2><button className="btn light" onClick={()=>go("raffles")}>Explore raffle room →</button></div></section>
 <footer><div className="wrap foot-grid"><div><div className="brand light">American<span>Lottery</span></div><p>Entries are stored online. Payment processing and official lottery authorization are not enabled.</p></div><div className="fl"><a href="#">Responsible play</a><a href="#">Privacy</a><a href="#">Terms</a></div></div></footer>

@@ -122,7 +122,7 @@ app.get("/api/results", async (_req, res) => {
 app.use("/api", (_req, res) => res.status(404).json({ error: "API endpoint not found." }));
 
 app.use(express.static(distDir, { index: false, maxAge: isProduction ? "1h" : 0 }));
-app.get("*", (req, res, next) => {
+app.get(/.*/, (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
   res.sendFile(path.join(distDir, "index.html"), (error) => { if (error) next(error); });
 });

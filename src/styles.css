@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap");
 :root{--navy:#071a35;--navy2:#0d2a52;--blue:#2563eb;--teal:#14b8a6;--ink:#0f1b2d;--mute:#64748b;--line:#e2e8f0;--bg:#f6f8fc;font-family:Inter,system-ui,sans-serif;color:var(--ink)}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff}
 a,button{font:inherit}h1,h2,h3{font-family:Manrope,sans-serif;margin:0;letter-spacing:-.02em}p{margin:0}
@@ -58,7 +58,6 @@ body footer{background:#041126;color:#8da2c3;padding:40px 0;font-size:14px}.foot
 
 
 /* CLASSIC CASINO LOUNGE — warm gold, deep emerald felt, brass trim */
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700;800&display=swap");
 :root{--navy:#101a19;--navy2:#102d26;--blue:#c99a43;--teal:#d7b66b;--ink:#1b2822;--mute:#68736b;--line:#e2d7bd;--bg:#f4efe3;font-family:"DM Sans",Georgia,sans-serif;color:var(--ink)}
 body{background:#f4efe3}
 h1,h2,h3,.brand,.stats strong,.jack strong,.raffle-prize strong,.price-item>strong{font-family:"Cormorant Garamond",Georgia,serif;letter-spacing:-.015em}

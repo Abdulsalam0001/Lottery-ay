@@ -91,7 +91,7 @@ return<div className="app">
 <img src={imageUrlOr(imageConfig.testimonials[i],U(faces[(i+3)%faces.length],96,96))} alt=""/><div><p>“{t.text}”</p><footer>{t.name}, {t.state}</footer></div></blockquote>)}</div>
 </div></section>
 
-<section className="cta"><div className="wrap"><h2>Your next favourite draw<br/><em>is on the board.</em></h2><button className="btn light" onClick={()=>go("games")}>Explore raffle room →</button></div></section>
+<section className="cta"><div className="wrap"><h2>Your next favourite draw<br/><em>is on the board.</em></h2><button className="btn light" onClick={()=>go("raffles")}>Explore raffle room →</button></div></section>
 <footer><div className="wrap foot-grid"><div><div className="brand light">American<span>Lottery</span></div><p>Design demonstration. Not an official U.S. state lottery.</p></div><div className="fl"><a href="#">Responsible play</a><a href="#">Privacy</a><a href="#">Terms</a></div></div></footer>
 {toast&&<div className="toast">{toast}</div>}
 </div>}
